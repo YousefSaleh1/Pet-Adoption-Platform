@@ -1,13 +1,13 @@
-Pet Adoption Platform API Design
-Introduction
+# Pet Adoption Platform API Design
+## Introduction
 
 This document outlines the API design and project structure for a Pet Adoption Platform. The design emphasizes clarity, maintainability, and scalability, drawing inspiration from SOLID principles and layered architecture patterns commonly seen in frameworks like Laravel, adapted for a Node.js/Express context. This is a "No Code" task focusing on design and analysis.
 
-1. Project Structure & Conceptual Libraries
+## 1. Project Structure & Conceptual Libraries
 
-Our proposed project structure promotes separation of concerns:
+### Our proposed project structure promotes separation of concerns:
 
-```F
+```
 pet-adoption-api/
 ├── src/
 │ ├── app.js # Express app setup, global middlewares
@@ -46,7 +46,7 @@ pet-adoption-api/
 └── README.md # This design document
 ```
 
-Conceptual Libraries to be Used:
+### Conceptual Libraries to be Used:
 
     Framework: Express.js (Minimalist and flexible Node.js web application framework).
 
@@ -66,11 +66,11 @@ Conceptual Libraries to be Used:
 
         bcryptjs (Future): For hashing passwords if user authentication is implemented.
 
-2. Database Choice Justification
+## 2. Database Choice Justification
 
 Choosing the right database is crucial for performance, scalability, and development ease. For the Pet Adoption Platform, we will analyze the suitability of both SQL (specifically MySQL with Sequelize as ORM) and NoSQL (specifically MongoDB with Mongoose as ODM).
 
-Data Characteristics & Relationships:
+### Data Characteristics & Relationships:
 
     Entities: The core entities are Pets, Clinics, and Articles.
 
@@ -98,7 +98,7 @@ Data Characteristics & Relationships:
 
         Filtering articles by petType and keywords.
 
-Option 1: NoSQL (MongoDB with Mongoose)
+#### Option 1: NoSQL (MongoDB with Mongoose)
 
     Pros:
 
@@ -116,7 +116,7 @@ Option 1: NoSQL (MongoDB with Mongoose)
 
         Complex Joins: Performing operations equivalent to complex SQL JOINs (e.g., for advanced analytics or reporting not typical for application-level queries) can be less direct, often relying on application-level joins or aggregation framework features.
 
-Option 2: SQL (MySQL with Sequelize)
+#### Option 2: SQL (MySQL with Sequelize)
 
     Pros:
 
@@ -136,7 +136,7 @@ Option 2: SQL (MySQL with Sequelize)
 
         Geospatial Support: MySQL has spatial extensions, but MongoDB's geospatial capabilities are often considered more comprehensive and developer-friendly for common location-based application queries.
 
-Recommendation & Justification:
+### Recommendation & Justification:
 
 For this Pet Adoption Platform, MongoDB (with Mongoose as ODM) is the recommended database.
 
@@ -154,9 +154,9 @@ For this Pet Adoption Platform, MongoDB (with Mongoose as ODM) is the recommende
 
 Therefore, the src/models/ directory would contain Mongoose schemas and models (e.g., Pet.model.js, Clinic.model.js, Article.model.js). These models will serve as the Data Access Objects (DAOs) for interacting with the MongoDB database. 3. Conceptual Data Models (Mongoose-like Schemas)
 
-    Pet (Pet.model.js):
+#### Pet (Pet.model.js):
 
-    ```js
+```js
     // Conceptual Mongoose Schema for Pet
     const petSchema = new Schema({
         name: { type: String, required: true, trim: true, index: true },
@@ -173,9 +173,9 @@ Therefore, the src/models/ directory would contain Mongoose schemas and models (
 
 
 
-    ```
+ ```
 
-Clinic (Clinic.model.js):
+#### Clinic (Clinic.model.js):
 
 ```js
 // Conceptual Mongoose Schema for Clinic
@@ -205,7 +205,7 @@ const clinicSchema = new Schema(
 clinicSchema.index({ location: "2dsphere" }); // Geospatial index for location-based searches
 ```
 
-Article (Article.model.js):
+#### Article (Article.model.js):
 
 ```js
 // Conceptual Mongoose Schema for Article
@@ -225,36 +225,36 @@ const articleSchema = new Schema(
 ); // `createdAt` can serve as publishedDate
 ```
 
-4. API Endpoint Definitions
+## 4. API Endpoint Definitions
 
 This section details the required APIs based on the user stories.
-User Story 1: "As a user, I want to see adoptable pets in my city."
+### User Story 1: "As a user, I want to see adoptable pets in my city."
 
-    API 1.1: List Adoptable Pets
+#### API 1.1: List Adoptable Pets
 
-        Method: GET
+Method: GET
 
-        Endpoint: /api/pets
+Endpoint: /api/pets
 
-        Description: Retrieves a paginated list of pets available for adoption, filterable by city, type, and adoption status.
+Description: Retrieves a paginated list of pets available for adoption, filterable by city, type, and adoption status.
 
-        Request Details:
+Request Details:
 
-            Query Params:
+Query Params:
 
-                city: string (Required) - e.g., "Nablus". Validation: pet.validator.js will check for presence.
+    city: string (Required) - e.g., "Nablus". Validation: pet.validator.js will check for presence.
 
-                type: string (Optional, enum: 'dog', 'cat') - e.g., "dog". Validation: pet.validator.js.
+    type: string (Optional, enum: 'dog', 'cat') - e.g., "dog". Validation: pet.validator.js.
 
-                isAdopted: boolean (Optional, default: false).
+    isAdopted: boolean (Optional, default: false).
 
-                page: number (Optional, default: 1, min: 1).
+    page: number (Optional, default: 1, min: 1).
 
-                limit: number (Optional, default: 10, min: 1, max: 100).
+    limit: number (Optional, default: 10, min: 1, max: 100).
 
-        Successful Response (200 OK):
+##### Successful Response (200 OK):
 
-        ```json
+```json
         {
           "message": "Pets retrieved successfully.",
           "data": [
@@ -281,38 +281,38 @@ User Story 1: "As a user, I want to see adoptable pets in my city."
 
 
 
-        ```
+ ```
 
-Potential Errors & Responses:
+##### Potential Errors & Responses:
 
-    400 Bad Request: If city is missing or other query params are invalid (e.g., non-enum type, non-numeric page). Handled by pet.validator.js via error.handler.js.
+400 Bad Request: If city is missing or other query params are invalid (e.g., non-enum type, non-numeric page). Handled by pet.validator.js via error.handler.js.
 
-    ```json
+```json
     { "status": "error", "statusCode": 400, "message": "Query parameter 'city' is required." }
 
 
 
-    ```
+```
 
-        404 Not Found: If no pets match the criteria. The service layer might return an empty array, and the controller will still send a 200 OK with empty data, or a specific 404 if preferred. (Convention: usually 200 OK with empty data for list endpoints).
+404 Not Found: If no pets match the criteria. The service layer might return an empty array, and the controller will still send a 200 OK with empty data, or a specific 404 if preferred. (Convention: usually 200 OK with empty data for list endpoints).
 
-        500 Internal Server Error: For unexpected server issues. Handled by error.handler.js.
+500 Internal Server Error: For unexpected server issues. Handled by error.handler.js.
 
-API 1.2: Get Specific Pet Details
+#### API 1.2: Get Specific Pet Details
 
-    Method: GET
+Method: GET
 
-    Endpoint: /api/pets/:id
+Endpoint: /api/pets/:id
 
-    Description: Retrieves detailed information for a specific pet by its ID.
+Description: Retrieves detailed information for a specific pet by its ID.
 
-    Request Details:
+Request Details:
 
-        Params: id: string (MongoDB ObjectId). Validation: ID format check in pet.validator.js.
+Params: id: string (MongoDB ObjectId). Validation: ID format check in pet.validator.js.
 
-    Successful Response (200 OK):
+ ##### Successful Response (200 OK):
 
-    ```json
+```json
     {
       "message": "Pet details retrieved successfully.",
       "data": {
@@ -333,52 +333,49 @@ API 1.2: Get Specific Pet Details
 
 
 
-    ```
+```
 
-Potential Errors & Responses:
+##### Potential Errors & Responses:
 
-    400 Bad Request: If id parameter is not a valid MongoDB ObjectId format. Handled by pet.validator.js.
+400 Bad Request: If id parameter is not a valid MongoDB ObjectId format. Handled by pet.validator.js.
 
-    404 Not Found: If no pet with the given ID exists. Service layer throws NotFoundError, handled by error.handler.js.
+404 Not Found: If no pet with the given ID exists. Service layer throws NotFoundError, handled by error.handler.js.
 
-    ```json
+```json
     { "status": "error", "statusCode": 404, "message": "Pet with ID '...' not found." }
+```
 
+500 Internal Server Error.
 
+### User Story 2: "As a user, I need to find currently open emergency vet clinics."
 
-    ```
+#### API 2.1: List Vet Clinics
 
-            500 Internal Server Error.
+    Method: GET
 
-User Story 2: "As a user, I need to find currently open emergency vet clinics."
+    Endpoint: /api/clinics
 
-    API 2.1: List Vet Clinics
+    Description: Retrieves a list of vet clinics, filterable by current open status (conceptual), emergency services, and city or proximity.
 
-        Method: GET
+    Request Details:
 
-        Endpoint: /api/clinics
+        Query Params:
 
-        Description: Retrieves a list of vet clinics, filterable by current open status (conceptual), emergency services, and city or proximity.
+            isOpenNow: boolean (Required, value must be true for this user story). Validation: clinic.validator.js.
 
-        Request Details:
+            isEmergency: boolean (Required, value must be true for this user story). Validation: clinic.validator.js.
 
-            Query Params:
+            city: string (Optional, if not providing lat/lng) - e.g., "Ramallah".
 
-                isOpenNow: boolean (Required, value must be true for this user story). Validation: clinic.validator.js.
+            lat: number (Optional, for geo-search, requires lng).
 
-                isEmergency: boolean (Required, value must be true for this user story). Validation: clinic.validator.js.
+            lng: number (Optional, for geo-search, requires lat).
 
-                city: string (Optional, if not providing lat/lng) - e.g., "Ramallah".
+            radius: number (Optional, in kilometers, for geo-search, default e.g., 10km).
 
-                lat: number (Optional, for geo-search, requires lng).
+##### Successful Response (200 OK):
 
-                lng: number (Optional, for geo-search, requires lat).
-
-                radius: number (Optional, in kilometers, for geo-search, default e.g., 10km).
-
-        Successful Response (200 OK):
-
-        ```json
+```json
         {
           "message": "Clinics retrieved successfully.",
           "data": [
@@ -398,43 +395,43 @@ User Story 2: "As a user, I need to find currently open emergency vet clinics."
 
 
 
-        ```
+```
 
-        Potential Errors & Responses:
+##### Potential Errors & Responses:
 
-            400 Bad Request: If isOpenNow or isEmergency are missing or not true for this specific search. Invalid geo-params. Handled by clinic.validator.js.
+    400 Bad Request: If isOpenNow or isEmergency are missing or not true for this specific search. Invalid geo-params. Handled by clinic.validator.js.
 
-            404 Not Found: If no clinics match the criteria. (Usually 200 OK with empty data for list endpoints).
+    404 Not Found: If no clinics match the criteria. (Usually 200 OK with empty data for list endpoints).
 
-            500 Internal Server Error.
+    500 Internal Server Error.
 
-User Story 3: "As a user, I want to search for articles by pet type."
+### User Story 3: "As a user, I want to search for articles by pet type."
 
-    API 3.1: List Articles
+#### API 3.1: List Articles
 
-        Method: GET
+    Method: GET
 
-        Endpoint: /api/articles
+    Endpoint: /api/articles
 
-        Description: Retrieves a paginated list of articles, filterable by pet type tags, category, and keywords.
+    Description: Retrieves a paginated list of articles, filterable by pet type tags, category, and keywords.
 
-        Request Details:
+    Request Details:
 
-            Query Params:
+        Query Params:
 
-                petType: string (Required, enum: 'dog', 'cat', 'general') - e.g., "dog". Validation: article.validator.js.
+            petType: string (Required, enum: 'dog', 'cat', 'general') - e.g., "dog". Validation: article.validator.js.
 
-                category: string (Optional) - e.g., "health".
+            category: string (Optional) - e.g., "health".
 
-                keyword: string (Optional, for searching in title/summary) - e.g., "training".
+            keyword: string (Optional, for searching in title/summary) - e.g., "training".
 
-                page: number (Optional, default: 1).
+            page: number (Optional, default: 1).
 
-                limit: number (Optional, default: 10).
+            limit: number (Optional, default: 10).
 
-        Successful Response (200 OK):
+##### Successful Response (200 OK):
 
-        ```json
+```json
         {
           "message": "Articles retrieved successfully.",
           "data": [
@@ -454,17 +451,17 @@ User Story 3: "As a user, I want to search for articles by pet type."
 
 
 
-        ```
+ ```
 
-    Potential Errors & Responses:
+##### Potential Errors & Responses:
 
-        400 Bad Request: If petType is missing or invalid. Handled by article.validator.js.
+    400 Bad Request: If petType is missing or invalid. Handled by article.validator.js.
 
-        404 Not Found: (Usually 200 OK with empty data for list endpoints).
+    404 Not Found: (Usually 200 OK with empty data for list endpoints).
 
-        500 Internal Server Error.
+    500 Internal Server Error.
 
-API 3.2: Get Specific Article Content
+#### API 3.2: Get Specific Article Content
 
     Method: GET
 
@@ -476,9 +473,9 @@ API 3.2: Get Specific Article Content
 
         Params: id: string (MongoDB ObjectId). Validation: ID format check in article.validator.js.
 
-    Successful Response (200 OK):
+##### Successful Response (200 OK):
 
-    ```json
+```json
     {
       "message": "Article content retrieved successfully.",
       "data": {
@@ -492,41 +489,41 @@ API 3.2: Get Specific Article Content
         "updatedAt": "2023-03-11T14:20:00.000Z"
       }
     }
-    ```
+```
 
-        Potential Errors & Responses:
+##### Potential Errors & Responses:
 
-            400 Bad Request: Invalid article ID format.
+    400 Bad Request: Invalid article ID format.
 
-            404 Not Found: Article with the given ID not found. Service throws NotFoundError.
+    404 Not Found: Article with the given ID not found. Service throws NotFoundError.
 
-            500 Internal Server Error.
+    500 Internal Server Error.
 
-5. Adherence to SOLID Principles (Conceptual)
+## 5. Adherence to SOLID Principles (Conceptual)
 
 The proposed architecture aims to adhere to SOLID principles:
 
-    Single Responsibility Principle (SRP):
+Single Responsibility Principle (SRP):
 
-        Controllers: Responsible for handling the HTTP request/response cycle, input sanitation (delegated to validators), and invoking appropriate service methods. They do not contain business logic.
+    Controllers: Responsible for handling the HTTP request/response cycle, input sanitation (delegated to validators), and invoking appropriate service methods. They do not contain business logic.
 
-        Services: Encapsulate all business logic related to a specific domain (e.g., PetService handles all operations for pets). They interact with models for data persistence.
+    Services: Encapsulate all business logic related to a specific domain (e.g., PetService handles all operations for pets). They interact with models for data persistence.
 
-        Models (Mongoose): Define the data schema and provide an abstraction layer for database interactions (CRUD operations, queries).
+    Models (Mongoose): Define the data schema and provide an abstraction layer for database interactions (CRUD operations, queries).
 
-        Validators (*.validator.js): Solely responsible for validating incoming request data against predefined rules.
+    Validators (*.validator.js): Solely responsible for validating incoming request data against predefined rules.
 
-        Error Handler Middleware: Centralized place for handling all errors and formatting consistent error responses.
+    Error Handler Middleware: Centralized place for handling all errors and formatting consistent error responses.
 
-    Open/Closed Principle (OCP): The system is open for extension (e.g., adding new features, routes, or services) but closed for modification of existing, stable components. Middleware architecture (validators, error handlers) naturally supports this.
+Open/Closed Principle (OCP): The system is open for extension (e.g., adding new features, routes, or services) but closed for modification of existing, stable components. Middleware architecture (validators, error handlers) naturally supports this.
 
-    Liskov Substitution Principle (LSP): More relevant with class inheritance, but conceptually, different service implementations (if we were to use interfaces) should be substitutable.
+Liskov Substitution Principle (LSP): More relevant with class inheritance, but conceptually, different service implementations (if we were to use interfaces) should be substitutable.
 
-    Interface Segregation Principle (ISP): Clients (e.g., controllers) should not be forced to depend on methods they do not use. Services should expose focused interfaces.
+Interface Segregation Principle (ISP): Clients (e.g., controllers) should not be forced to depend on methods they do not use. Services should expose focused interfaces.
 
-    Dependency Inversion Principle (DIP): High-level modules (Controllers) depend on abstractions (Services), and Services depend on abstractions (Models provided by ORM/ODM). This promotes loose coupling and testability. Actual dependency injection can be achieved manually or with DI containers.
+Dependency Inversion Principle (DIP): High-level modules (Controllers) depend on abstractions (Services), and Services depend on abstractions (Models provided by ORM/ODM). This promotes loose coupling and testability. Actual dependency injection can be achieved manually or with DI containers.
 
-6. Future Considerations (Out of Scope for this Task, but good for design thinking)
+## 6. Future Considerations (Out of Scope for this Task, but good for design thinking)
 
    User Authentication & Authorization: Implementing user accounts (adopters, clinic owners, admins) with JWTs or sessions. Role-based access control (RBAC).
 
