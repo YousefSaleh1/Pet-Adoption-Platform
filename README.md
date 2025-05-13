@@ -48,23 +48,23 @@ pet-adoption-api/
 
 ### Conceptual Libraries to be Used:
 
-    Framework: Express.js (Minimalist and flexible Node.js web application framework).
+#### Framework: Express.js (Minimalist and flexible Node.js web application framework).
 
-    Database & ORM/ODM: (See section below: "Database Choice Justification" - Mongoose for MongoDB is proposed).
+#### Database & ORM/ODM: (See section below: "Database Choice Justification" - Mongoose for MongoDB is proposed).
 
-    Validation: A library like Joi or express-validator (For robust and declarative request data validation).
+#### Validation: A library like Joi or express-validator (For robust and declarative request data validation).
 
-    Authentication (Future): jsonwebtoken (For implementing JWT-based authentication if user accounts are added).
+#### Authentication (Future): jsonwebtoken (For implementing JWT-based authentication if user accounts are added).
 
-    Utilities:
+#### Utilities:
 
-        dotenv: For loading environment variables from a .env file.
+##### dotenv: For loading environment variables from a .env file.
 
-        uuid: For generating unique identifiers if not provided by the database (MongoDB ObjectIds are typically used).
+##### uuid: For generating unique identifiers if not provided by the database (MongoDB ObjectIds are typically used).
 
-        morgan: HTTP request logger middleware for Node.js.
+##### morgan: HTTP request logger middleware for Node.js.
 
-        bcryptjs (Future): For hashing passwords if user authentication is implemented.
+##### bcryptjs (Future): For hashing passwords if user authentication is implemented.
 
 ## 2. Database Choice Justification
 
@@ -72,89 +72,89 @@ Choosing the right database is crucial for performance, scalability, and develop
 
 ### Data Characteristics & Relationships:
 
-    Entities: The core entities are Pets, Clinics, and Articles.
+#### Entities: The core entities are Pets, Clinics, and Articles.
 
-    Relationships:
+#### Relationships:
 
-        A pet is associated with one city (can be a simple string field or a reference if cities become managed entities).
+##### A pet is associated with one city (can be a simple string field or a reference if cities become managed entities).
 
-        Articles can be tagged by pet type (e.g., 'dog', 'cat'). This could be an array of strings.
+##### Articles can be tagged by pet type (e.g., 'dog', 'cat'). This could be an array of strings.
 
-        Future considerations: Users might "favorite" pets (many-to-many), and adoption records would link users to pets.
+##### Future considerations: Users might "favorite" pets (many-to-many), and adoption records would link users to pets.
 
-    Data Structure:
+#### Data Structure:
 
-        Pets, Clinics, and Articles have relatively well-defined schemas.
+##### Pets, Clinics, and Articles have relatively well-defined schemas.
 
-        Some fields are naturally arrays (e.g., services in Clinic, petTypeTags in Article).
+##### Some fields are naturally arrays (e.g., services in Clinic, petTypeTags in Article).
 
-        Clinic operatingHours and location (coordinates) are well-suited for nested object structures.
+##### Clinic operatingHours and location (coordinates) are well-suited for nested object structures.
 
-    Query Patterns:
+#### Query Patterns:
 
-        Filtering pets by city, type, adoption status.
+##### Filtering pets by city, type, adoption status.
 
-        Searching clinics based on isOpenNow, isEmergency, city, or geo-location (proximity search).
+##### Searching clinics based on isOpenNow, isEmergency, city, or geo-location (proximity search).
 
-        Filtering articles by petType and keywords.
+##### Filtering articles by petType and keywords.
 
 #### Option 1: NoSQL (MongoDB with Mongoose)
 
-    Pros:
+##### Pros:
 
-        Schema Flexibility: MongoDB's document model excels at handling arrays, nested objects, and evolving data structures without requiring strict schema migrations for every minor change. This is highly beneficial for a startup where requirements can change rapidly.
+###### Schema Flexibility: MongoDB's document model excels at handling arrays, nested objects, and evolving data structures without requiring strict schema migrations for every minor change. This is highly beneficial for a startup where requirements can change rapidly.
 
-        Scalability: MongoDB is designed for horizontal scalability (sharding), which is advantageous for applications expecting high traffic and data growth.
+###### Scalability: MongoDB is designed for horizontal scalability (sharding), which is advantageous for applications expecting high traffic and data growth.
 
-        Geo-spatial Queries: MongoDB has robust built-in support for geospatial indexing and queries, which is a key requirement for finding nearby clinics.
+###### Geo-spatial Queries: MongoDB has robust built-in support for geospatial indexing and queries, which is a key requirement for finding nearby clinics.
 
-        Development Speed: For applications with document-centric data, Mongoose (an ODM for MongoDB) can lead to faster development cycles, especially for teams proficient in JavaScript/JSON.
+###### Development Speed: For applications with document-centric data, Mongoose (an ODM for MongoDB) can lead to faster development cycles, especially for teams proficient in JavaScript/JSON.
 
-    Cons:
+##### Cons:
 
-        Transactions: While MongoDB supports multi-document ACID transactions, they can be more complex to reason about and manage for highly interdependent relational operations compared to traditional SQL databases.
+###### Transactions: While MongoDB supports multi-document ACID transactions, they can be more complex to reason about and manage for highly interdependent relational operations compared to traditional SQL databases.
 
-        Complex Joins: Performing operations equivalent to complex SQL JOINs (e.g., for advanced analytics or reporting not typical for application-level queries) can be less direct, often relying on application-level joins or aggregation framework features.
+###### Complex Joins: Performing operations equivalent to complex SQL JOINs (e.g., for advanced analytics or reporting not typical for application-level queries) can be less direct, often relying on application-level joins or aggregation framework features.
 
 #### Option 2: SQL (MySQL with Sequelize)
 
-    Pros:
+##### Pros:
 
-        ACID Transactions: MySQL (typically with the InnoDB storage engine) provides strong ACID compliance, ensuring high data consistency and reliability for transactional operations.
+###### ACID Transactions: MySQL (typically with the InnoDB storage engine) provides strong ACID compliance, ensuring high data consistency and reliability for transactional operations.
 
-        Mature Relational Model: Ideal for highly structured data with well-defined relationships where data integrity enforced by schemas and foreign keys is paramount. MySQL is a widely adopted and well-understood RDBMS.
+###### Mature Relational Model: Ideal for highly structured data with well-defined relationships where data integrity enforced by schemas and foreign keys is paramount. MySQL is a widely adopted and well-understood RDBMS.
 
-        Powerful Query Language (SQL): SQL is extremely powerful for complex queries, JOINs, and data aggregation.
+###### Powerful Query Language (SQL): SQL is extremely powerful for complex queries, JOINs, and data aggregation.
 
-    Cons:
+##### Cons:
 
-        Schema Rigidity: Requires schema migrations (e.g., managed by Sequelize migrations) for any structural changes, which can add development overhead, especially in early stages with frequent iterations.
+###### Schema Rigidity: Requires schema migrations (e.g., managed by Sequelize migrations) for any structural changes, which can add development overhead, especially in early stages with frequent iterations.
 
-        Scalability: MySQL primarily scales vertically (increasing resources of a single server). While solutions like read replicas and clustering exist, implementing and managing horizontal sharding is generally more complex than with MongoDB.
+###### Scalability: MySQL primarily scales vertically (increasing resources of a single server). While solutions like read replicas and clustering exist, implementing and managing horizontal sharding is generally more complex than with MongoDB.
 
-        Handling Semi-structured Data: While newer versions of MySQL support a JSON data type, storing and querying arrays or deeply nested JSON-like structures can feel less native and might not offer the same performance or ease of use as MongoDB.
+###### Handling Semi-structured Data: While newer versions of MySQL support a JSON data type, storing and querying arrays or deeply nested JSON-like structures can feel less native and might not offer the same performance or ease of use as MongoDB.
 
-        Geospatial Support: MySQL has spatial extensions, but MongoDB's geospatial capabilities are often considered more comprehensive and developer-friendly for common location-based application queries.
+###### Geospatial Support: MySQL has spatial extensions, but MongoDB's geospatial capabilities are often considered more comprehensive and developer-friendly for common location-based application queries.
 
 ### Recommendation & Justification:
 
 For this Pet Adoption Platform, MongoDB (with Mongoose as ODM) is the recommended database.
 
-    Justification:
+#### Justification:
 
-        Geospatial Needs: The critical requirement to find nearby clinics (based on isOpenNow, isEmergency, and geographical proximity) is a strong fit for MongoDB's native and efficient geospatial indexing and query capabilities.
+##### Geospatial Needs: The critical requirement to find nearby clinics (based on isOpenNow, isEmergency, and geographical proximity) is a strong fit for MongoDB's native and efficient geospatial indexing and query capabilities.
 
-        Flexible Data Model & Rapid Iteration: The nature of data like clinic services (array), article tags (array), and potentially evolving pet attributes (e.g., array of medical notes) aligns well with MongoDB's flexible document model. This facilitates quicker iterations and adaptation to new features, which is vital for a startup.
+##### Flexible Data Model & Rapid Iteration: The nature of data like clinic services (array), article tags (array), and potentially evolving pet attributes (e.g., array of medical notes) aligns well with MongoDB's flexible document model. This facilitates quicker iterations and adaptation to new features, which is vital for a startup.
 
-        Development Agility: Mongoose and the document-centric approach often lead to faster initial development and easier integration for teams already working extensively with JavaScript and JSON.
+##### Development Agility: Mongoose and the document-centric approach often lead to faster initial development and easier integration for teams already working extensively with JavaScript and JSON.
 
-        Scalability for Growth: MongoDB's architecture is inherently designed for horizontal scaling, providing a good path for handling future growth in user base and data volume.
+##### Scalability for Growth: MongoDB's architecture is inherently designed for horizontal scaling, providing a good path for handling future growth in user base and data volume.
 
-        Simplicity for Core Relationships: The primary relationships in the current scope (e.g., pet to city, article to tags) can be effectively managed within a document model using embedding or simple references, without the immediate need for the full complexity of SQL JOINs for most common application queries.
+##### Simplicity for Core Relationships: The primary relationships in the current scope (e.g., pet to city, article to tags) can be effectively managed within a document model using embedding or simple references, without the immediate need for the full complexity of SQL JOINs for most common application queries.
 
 Therefore, the src/models/ directory would contain Mongoose schemas and models (e.g., Pet.model.js, Clinic.model.js, Article.model.js). These models will serve as the Data Access Objects (DAOs) for interacting with the MongoDB database. 3. Conceptual Data Models (Mongoose-like Schemas)
 
-#### Pet (Pet.model.js):
+Pet (Pet.model.js):
 
 ```js
     // Conceptual Mongoose Schema for Pet
@@ -175,7 +175,7 @@ Therefore, the src/models/ directory would contain Mongoose schemas and models (
 
  ```
 
-#### Clinic (Clinic.model.js):
+Clinic (Clinic.model.js):
 
 ```js
 // Conceptual Mongoose Schema for Clinic
@@ -205,7 +205,7 @@ const clinicSchema = new Schema(
 clinicSchema.index({ location: "2dsphere" }); // Geospatial index for location-based searches
 ```
 
-#### Article (Article.model.js):
+Article (Article.model.js):
 
 ```js
 // Conceptual Mongoose Schema for Article
@@ -252,7 +252,7 @@ Query Params:
 
     limit: number (Optional, default: 10, min: 1, max: 100).
 
-##### Successful Response (200 OK):
+Successful Response (200 OK):
 
 ```json
         {
@@ -283,7 +283,7 @@ Query Params:
 
  ```
 
-##### Potential Errors & Responses:
+Potential Errors & Responses:
 
 400 Bad Request: If city is missing or other query params are invalid (e.g., non-enum type, non-numeric page). Handled by pet.validator.js via error.handler.js.
 
@@ -310,7 +310,7 @@ Request Details:
 
 Params: id: string (MongoDB ObjectId). Validation: ID format check in pet.validator.js.
 
- ##### Successful Response (200 OK):
+Successful Response (200 OK):
 
 ```json
     {
@@ -335,7 +335,7 @@ Params: id: string (MongoDB ObjectId). Validation: ID format check in pet.valida
 
 ```
 
-##### Potential Errors & Responses:
+Potential Errors & Responses:
 
 400 Bad Request: If id parameter is not a valid MongoDB ObjectId format. Handled by pet.validator.js.
 
@@ -351,29 +351,29 @@ Params: id: string (MongoDB ObjectId). Validation: ID format check in pet.valida
 
 #### API 2.1: List Vet Clinics
 
-    Method: GET
+Method: GET
 
-    Endpoint: /api/clinics
+Endpoint: /api/clinics
 
-    Description: Retrieves a list of vet clinics, filterable by current open status (conceptual), emergency services, and city or proximity.
+Description: Retrieves a list of vet clinics, filterable by current open status (conceptual), emergency services, and city or proximity.
 
-    Request Details:
+Request Details:
 
-        Query Params:
+Query Params:
 
-            isOpenNow: boolean (Required, value must be true for this user story). Validation: clinic.validator.js.
+    isOpenNow: boolean (Required, value must be true for this user story). Validation: clinic.validator.js.
 
-            isEmergency: boolean (Required, value must be true for this user story). Validation: clinic.validator.js.
+    isEmergency: boolean (Required, value must be true for this user story). Validation: clinic.validator.js.
 
-            city: string (Optional, if not providing lat/lng) - e.g., "Ramallah".
+    city: string (Optional, if not providing lat/lng) - e.g., "Ramallah".
 
-            lat: number (Optional, for geo-search, requires lng).
+    lat: number (Optional, for geo-search, requires lng).
 
-            lng: number (Optional, for geo-search, requires lat).
+    lng: number (Optional, for geo-search, requires lat).
 
-            radius: number (Optional, in kilometers, for geo-search, default e.g., 10km).
+    radius: number (Optional, in kilometers, for geo-search, default e.g., 10km).
 
-##### Successful Response (200 OK):
+Successful Response (200 OK):
 
 ```json
         {
@@ -397,7 +397,7 @@ Params: id: string (MongoDB ObjectId). Validation: ID format check in pet.valida
 
 ```
 
-##### Potential Errors & Responses:
+Potential Errors & Responses:
 
     400 Bad Request: If isOpenNow or isEmergency are missing or not true for this specific search. Invalid geo-params. Handled by clinic.validator.js.
 
@@ -409,27 +409,27 @@ Params: id: string (MongoDB ObjectId). Validation: ID format check in pet.valida
 
 #### API 3.1: List Articles
 
-    Method: GET
+Method: GET
 
-    Endpoint: /api/articles
+Endpoint: /api/articles
 
-    Description: Retrieves a paginated list of articles, filterable by pet type tags, category, and keywords.
+Description: Retrieves a paginated list of articles, filterable by pet type tags, category, and keywords.
 
-    Request Details:
+Request Details:
 
-        Query Params:
+Query Params:
 
-            petType: string (Required, enum: 'dog', 'cat', 'general') - e.g., "dog". Validation: article.validator.js.
+    petType: string (Required, enum: 'dog', 'cat', 'general') - e.g., "dog". Validation: article.validator.js.
 
-            category: string (Optional) - e.g., "health".
+    category: string (Optional) - e.g., "health".
 
-            keyword: string (Optional, for searching in title/summary) - e.g., "training".
+    keyword: string (Optional, for searching in title/summary) - e.g., "training".
 
-            page: number (Optional, default: 1).
+    page: number (Optional, default: 1).
 
-            limit: number (Optional, default: 10).
+    limit: number (Optional, default: 10).
 
-##### Successful Response (200 OK):
+Successful Response (200 OK):
 
 ```json
         {
@@ -453,7 +453,7 @@ Params: id: string (MongoDB ObjectId). Validation: ID format check in pet.valida
 
  ```
 
-##### Potential Errors & Responses:
+Potential Errors & Responses:
 
     400 Bad Request: If petType is missing or invalid. Handled by article.validator.js.
 
@@ -463,17 +463,17 @@ Params: id: string (MongoDB ObjectId). Validation: ID format check in pet.valida
 
 #### API 3.2: Get Specific Article Content
 
-    Method: GET
+Method: GET
 
-    Endpoint: /api/articles/:id
+Endpoint: /api/articles/:id
 
-    Description: Retrieves the full content of a specific article by its ID.
+Description: Retrieves the full content of a specific article by its ID.
 
-    Request Details:
+Request Details:
 
-        Params: id: string (MongoDB ObjectId). Validation: ID format check in article.validator.js.
+Params: id: string (MongoDB ObjectId). Validation: ID format check in article.validator.js.
 
-##### Successful Response (200 OK):
+Successful Response (200 OK):
 
 ```json
     {
@@ -491,7 +491,7 @@ Params: id: string (MongoDB ObjectId). Validation: ID format check in pet.valida
     }
 ```
 
-##### Potential Errors & Responses:
+Potential Errors & Responses:
 
     400 Bad Request: Invalid article ID format.
 
